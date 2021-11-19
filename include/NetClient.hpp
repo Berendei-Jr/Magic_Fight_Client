@@ -60,6 +60,11 @@ namespace net
             return true;
         }
 
+        const std::string& Top()
+        {
+            return _in_logic_messages.front();
+        }
+
         int NumOfMsgAvailable()
         {
             return Incoming().size();
