@@ -31,7 +31,6 @@ find_package(Boost CONFIG REQUIRED system)
 find_package(SFML COMPONENTS graphics CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Threads)
-find_package( Curses REQUIRED )
 include_directories( ${CURSES_INCLUDE_DIRS} )
 
 add_executable(client main/main.cpp)
@@ -44,4 +43,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         "${BOOST_ROOT}/include"
 )
 
-target_link_libraries(client PUBLIC ${PROJECT_NAME} ${CURSES_LIBRARIES} Threads::Threads ${OPENGL_LIBRARIES} sfml-graphics Boost::boost Boost::system)
+target_link_libraries(client PUBLIC ${PROJECT_NAME} Threads::Threads ${OPENGL_LIBRARIES} sfml-graphics Boost::boost Boost::system)
