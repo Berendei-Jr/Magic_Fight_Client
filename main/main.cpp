@@ -1,9 +1,60 @@
 #include <NetClient.hpp>
 #include <SFML/Graphics.hpp>
 
-int main() {
-    net::client_interface Client;
-    Client.Connect("127.0.0.1", 6969);
+int main(int argc, char* argv[])
+{
+    /*
+    std::string str_tst = "Hello, bitch!\n";
+    std::unique_ptr<xtea3> ptr_xtea_lib = std::make_unique<xtea3>();
+    uint32_t key[8] = {0x12, 0x55, 0xAB, 0xF8, 0x12, 0x45, 0x77, 0x1A};
+    uint8_t *p_crypt_data = ptr_xtea_lib->data_crypt((uint8_t*)str_tst.c_str(), key, str_tst.length() + 1);
+    if (p_crypt_data == nullptr)
+    {
+        std::cout << "Error decrypt fdata \n";
+        return (-1);
+    }
+
+    std::cout << "CRYPT_STR: \n";
+    std::cout << "CRYPT_STR SIZE = " << ptr_xtea_lib->get_crypt_size() << "\n";
+    for (int i = 0; i < ptr_xtea_lib->get_crypt_size(); i++)
+    {
+        std::cout << p_crypt_data[i];
+    }
+
+    uint8_t *p_decrypt_data = ptr_xtea_lib->data_decrypt((uint8_t*)p_crypt_data, key, ptr_xtea_lib->get_crypt_size());
+    if (p_decrypt_data == nullptr)
+    {
+        std::cout << "Error decrypt fdata \n";
+        return (-1);
+    }
+
+    //Очистим строку
+    str_tst.clear();
+
+    //Прировняем указатель на расшифрованные данные нашей строки
+    str_tst = (char*)p_decrypt_data;
+
+    std::cout << "\n\nDECRYPT_STR: \n";
+
+    std::cout << "SIZE DECRYPT STR: " << ptr_xtea_lib->get_decrypt_size() <<" \n";
+    std::cout << "SIZE DECRYPT STRING: " << str_tst.length() << " \n";
+    std::cout << str_tst.c_str() << " \n";
+
+    */
+
+    std::string host = "127.0.0.1";
+    bool encryption = true;
+
+    if (argc == 3)
+    {
+        host = argv[1];
+        encryption = (bool)argv[1];
+    }
+
+    net::client_interface Client(encryption);
+    Client.Connect(host, 6969);
+
+    Client.Send("Hello test!\n");
 
     char d, act_key;
     bool b = false;

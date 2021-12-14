@@ -11,15 +11,17 @@ namespace net
 
         tsqueue<std::string> _in_logic_messages;
 
-        client_interface(): _socket(_context) {}
+        explicit client_interface(bool encr): _socket(_context), _encryption(encr) {}
         bool Ready()
         {
             return !_in_logic_messages.empty();
         }
+
         std::string Get()
         {
             return _in_logic_messages.pop_front();
         }
+
         void Send(const std::string& msg)
         {
             if (IsConnected()) {
@@ -40,7 +42,8 @@ namespace net
 
                 _connection = std::make_unique<connection>(
                         connection::owner::client, _context,
-                        boost::asio::ip::tcp::socket(_context), _in_queue);
+                        boost::asio::ip::tcp::socket(_context), _in_queue,
+                        _encryption);
 
                 _connection->ConnectToServer(endpoints);
                 _thrContext = std::thread([this]() { _context.run(); });
@@ -126,6 +129,7 @@ namespace net
             }
         }
 
+        bool _encryption;
         boost::asio::ip::tcp::endpoint _endpoint;
         tsqueue<owned_message> _in_queue;
         boost::asio::io_context _context;

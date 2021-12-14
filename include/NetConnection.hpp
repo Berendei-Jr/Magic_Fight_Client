@@ -3,6 +3,7 @@
 
 #include "../../Magic_Fight_Client/include/NetCommon.hpp"
 #include <NetThreadSafeQueue.hpp>
+#include <xtea3_lib/xtea3.h>
 
 namespace net
 {
@@ -16,13 +17,16 @@ namespace net
         };
 
         connection(owner parent, boost::asio::io_context& context,
-                   boost::asio::ip::tcp::socket socket, tsqueue<owned_message>& in_queue) :
-                   _context(context), _socket(std::move(socket)), _in_queue(in_queue)
+                   boost::asio::ip::tcp::socket socket,
+                   tsqueue<owned_message>& in_queue, bool encr) :
+                   _context(context), _socket(std::move(socket)),
+                   _in_queue(in_queue), _encryption(encr),
+                   _ptr_xtea(std::make_unique<xtea3>())
         {
             _owner = parent;
         }
 
-        ~connection(){}
+        ~connection() = default;
 
         void ConnectToClient(uint32_t uid = 0)
         {
@@ -141,7 +145,15 @@ namespace net
 
         void WriteBody()
         {
-            boost::asio::async_write(_socket, boost::asio::buffer(_out_queue.front().body.data(), _out_queue.front().body.size()),
+            std::string tmp = _out_queue.front().body;
+            uint8_t *p_crypt_data = _ptr_xtea->data_crypt((uint8_t*)tmp.c_str(), key, tmp.length() + 1);
+            if (p_crypt_data == nullptr)
+            {
+                std::cerr << "Error encrypt message\n";
+                WriteHeader();
+            }
+
+            boost::asio::async_write(_socket, boost::asio::buffer(p_crypt_data, _ptr_xtea->get_crypt_size()),
                                      [this](boost::system::error_code ec, size_t length)
                                      {
                                         if (!ec)
@@ -180,6 +192,9 @@ namespace net
         owner _owner = owner::server;
         uint32_t _id = 0;
         message _tmp_msg;
+        bool _encryption;
+        std::unique_ptr<xtea3> _ptr_xtea;
+        uint32_t key[8] = {0x12, 0x55, 0xAB, 0xF8, 0x12, 0x45, 0x77, 0x1A};
     };
 }
 
