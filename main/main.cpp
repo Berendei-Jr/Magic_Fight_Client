@@ -48,13 +48,13 @@ int main(int argc, char* argv[])
     if (argc == 3)
     {
         host = argv[1];
-        encryption = (bool)argv[1];
+        encryption = std::stoi(argv[2]);
     }
 
     net::client_interface Client(encryption);
     Client.Connect(host, 6969);
 
-    Client.Send("Hello test!\n");
+    //Client.Send("Hello test!\n");
 
     char d, act_key;
     bool b = false;
@@ -89,8 +89,8 @@ int main(int argc, char* argv[])
                     {
                         Client.Send(std::to_string(it2->second)
                         + " " + std::to_string(it1->second));
-                        std::cout << it2->second <<
-                                  " " << it1->second << "\n";
+                        //std::cout << it2->second <<
+                        //          " " << it1->second << "\n";
                     }
                     b = false;
                 } else {

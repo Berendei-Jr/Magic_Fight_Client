@@ -11,7 +11,7 @@ namespace net
 
         tsqueue<std::string> _in_logic_messages;
 
-        explicit client_interface(bool encr): _socket(_context), _encryption(encr) {}
+        explicit client_interface(bool encr): _socket(_context), _encryption(encr), _ptr_xtea(std::make_shared<xtea3>()) {}
         bool Ready()
         {
             return !_in_logic_messages.empty();
@@ -24,11 +24,34 @@ namespace net
 
         void Send(const std::string& msg)
         {
-            if (IsConnected()) {
+            if (IsConnected())
+            {
                 message m;
                 m.header.id = MsgTypes::Logic;
-                m.header.size = msg.size();
-                m.body = msg;
+
+                if (_encryption)
+                {
+                    uint8_t* tmp_ptr = _ptr_xtea->data_crypt((uint8_t *) msg.c_str(), key, msg.length() + 1);
+                    if (tmp_ptr == nullptr) {
+                        std::cerr << "Error encrypt message\n";
+                    }
+                    m.header.size = _ptr_xtea->get_crypt_size();
+                    m.body;
+                   for (size_t i = 0; i < m.header.size; i++)
+                    {
+                        std::cout << "To append: " << tmp_ptr[i] << "\n";
+                        m.body.push_back(tmp_ptr[i]);
+                        std::cout << "append: " << m.body[i] << "\n";
+                    }
+                    std::cout << "CRYPT SIZE: " << m.header.size << " " << m.body.size() << std::endl;
+                } else {
+                    m.header.size = msg.size();
+                    m.body;
+                    for (auto& it : msg)
+                    {
+                        m.body.push_back(it);
+                    }
+                }
                 _connection->Send(m);
             }
         }
@@ -43,7 +66,7 @@ namespace net
                 _connection = std::make_unique<connection>(
                         connection::owner::client, _context,
                         boost::asio::ip::tcp::socket(_context), _in_queue,
-                        _encryption);
+                        _encryption, _ptr_xtea);
 
                 _connection->ConnectToServer(endpoints);
                 _thrContext = std::thread([this]() { _context.run(); });
@@ -109,9 +132,18 @@ namespace net
                 case MsgTypes::Handshake:
                     std::cout << "Handshake received!\n";
                 case MsgTypes::Logic:
-                    //std::cout << "LoGIC msg received!\n";
-                    std::string tmp = msg.body;
-                    _in_logic_messages.push_back(tmp);
+                    if (!_encryption)
+                    {
+                        std::string tmp;
+                        for (auto& it : msg.body)
+                        {
+                            tmp.push_back(it);
+                        }
+                        _in_logic_messages.push_back(tmp);
+                    } else {
+                        //TODO Decryption
+                    }
+
             }
         }
 
@@ -130,6 +162,8 @@ namespace net
         }
 
         bool _encryption;
+        std::shared_ptr<xtea3> _ptr_xtea;
+        uint32_t key[8] = {0x12, 0x55, 0xAB, 0xF8, 0x12, 0x45, 0x77, 0x1A};
         boost::asio::ip::tcp::endpoint _endpoint;
         tsqueue<owned_message> _in_queue;
         boost::asio::io_context _context;

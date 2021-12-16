@@ -18,10 +18,9 @@ namespace net
 
         connection(owner parent, boost::asio::io_context& context,
                    boost::asio::ip::tcp::socket socket,
-                   tsqueue<owned_message>& in_queue, bool encr) :
+                   tsqueue<owned_message>& in_queue, bool encr, std::shared_ptr<xtea3> ptr_xtea) :
                    _context(context), _socket(std::move(socket)),
-                   _in_queue(in_queue), _encryption(encr),
-                   _ptr_xtea(std::make_unique<xtea3>())
+                   _in_queue(in_queue), _encryption(encr), _ptr_xtea(ptr_xtea)
         {
             _owner = parent;
         }
@@ -126,7 +125,7 @@ namespace net
                                      {
                                          if (!ec)
                                          {
-                                             if (_out_queue.front().body.size() > 0)
+                                             if (!_out_queue.front().body.empty())
                                              {
                                                  WriteBody();
                                              } else {
@@ -145,19 +144,12 @@ namespace net
 
         void WriteBody()
         {
-            std::string tmp = _out_queue.front().body;
-            uint8_t *p_crypt_data = _ptr_xtea->data_crypt((uint8_t*)tmp.c_str(), key, tmp.length() + 1);
-            if (p_crypt_data == nullptr)
-            {
-                std::cerr << "Error encrypt message\n";
-                WriteHeader();
-            }
-
-            boost::asio::async_write(_socket, boost::asio::buffer(p_crypt_data, _ptr_xtea->get_crypt_size()),
+            boost::asio::async_write(_socket, boost::asio::buffer(_out_queue.front().body.data(), _out_queue.front().body.size()),
                                      [this](boost::system::error_code ec, size_t length)
                                      {
                                         if (!ec)
                                         {
+                                            std::cerr << "Sent msg: " << _out_queue.front();
                                             _out_queue.pop_front();
                                             if (!_out_queue.empty())
                                             {
@@ -193,7 +185,7 @@ namespace net
         uint32_t _id = 0;
         message _tmp_msg;
         bool _encryption;
-        std::unique_ptr<xtea3> _ptr_xtea;
+        std::shared_ptr<xtea3> _ptr_xtea;
         uint32_t key[8] = {0x12, 0x55, 0xAB, 0xF8, 0x12, 0x45, 0x77, 0x1A};
     };
 }

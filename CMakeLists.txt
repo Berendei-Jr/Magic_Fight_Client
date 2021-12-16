@@ -25,7 +25,6 @@ add_library(${PROJECT_NAME} STATIC
         sources/source.cpp
         xtea3_lib/xtea3.h
         xtea3_lib/xtea3.cpp
-        tests/test.cpp
 )
 
 hunter_add_package(SFML)

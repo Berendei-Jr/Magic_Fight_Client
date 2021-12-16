@@ -26,16 +26,21 @@ namespace net
     struct message
     {
         mes_header header{};
-        std::string body;
+        std::vector<uint8_t> body;
 
         size_t size() const
         {
-            return sizeof(header) + body.size();
+            return sizeof(header) + header.size;
         }
 
         friend std::ostream& operator << (std::ostream& out, const message& msg)
         {
-            out << "ID: " << int(msg.header.id) << " Size: " << msg.header.size << " Body: " << msg.body;
+            out << "ID: " << int(msg.header.id) << " Size: " << msg.header.size << " Body: ";
+            for (auto& it: msg.body)
+            {
+                out << it;
+            }
+            out << "\n";
             return out;
         }
     };
