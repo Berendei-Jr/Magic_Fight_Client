@@ -110,6 +110,20 @@ namespace net
                                     {
                                         if (!ec)
                                         {
+                                            if (_encryption)
+                                            {
+                                                uint8_t* decr_data = _ptr_xtea->data_decrypt(_tmp_msg.body.data(), key, _tmp_msg.size());
+                                                if (decr_data == nullptr)
+                                                {
+                                                    std::cerr << "Error decrypt\n";
+                                                    ReadHeader();
+                                                }
+                                                _tmp_msg.body.clear();
+                                                for (size_t i = 0; i < _ptr_xtea->get_decrypt_size() - 1; i++)
+                                                {
+                                                    _tmp_msg.body.push_back(decr_data[i]);
+                                                }
+                                            }
                                             AddToIncomingMsgQueue();
                                         } else {
                                             std::cout << "[" << _id << "] Read body failed: " << ec.message() << "\n";
@@ -149,7 +163,6 @@ namespace net
                                      {
                                         if (!ec)
                                         {
-                                            std::cerr << "Sent msg: " << _out_queue.front();
                                             _out_queue.pop_front();
                                             if (!_out_queue.empty())
                                             {

@@ -39,11 +39,8 @@ namespace net
                     m.body;
                    for (size_t i = 0; i < m.header.size; i++)
                     {
-                        std::cout << "To append: " << tmp_ptr[i] << "\n";
                         m.body.push_back(tmp_ptr[i]);
-                        std::cout << "append: " << m.body[i] << "\n";
                     }
-                    std::cout << "CRYPT SIZE: " << m.header.size << " " << m.body.size() << std::endl;
                 } else {
                     m.header.size = msg.size();
                     m.body;
@@ -141,9 +138,9 @@ namespace net
                         }
                         _in_logic_messages.push_back(tmp);
                     } else {
-                        //TODO Decryption
+                        std::string tmp = std::string((char*)msg.body.data());
+                        _in_logic_messages.push_back(tmp);
                     }
-
             }
         }
 

@@ -9,6 +9,16 @@
 #include <chrono>
 #include <boost/asio.hpp>
 
+std::ostream& operator<<(std::ostream& out, const std::vector<uint8_t>& vec)
+{
+    for (auto& it : vec)
+    {
+        out << it;
+    }
+    out << "\n";
+    return out;
+}
+
 namespace net
 {
     enum class MsgTypes : uint32_t
