@@ -3,7 +3,7 @@ language: minimal
 compiler: gcc
 
 before_install:
-  - su -m root -c 'pkg install -y libsfml-dev'
+  - su -m root -c 'pkg install -y sfml'
 
 addons:
   apt:
