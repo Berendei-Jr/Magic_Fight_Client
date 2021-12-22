@@ -1,5 +1,13 @@
 os: linux
 language: minimal
+compiler: gcc
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-7
 
 jobs:
   include:
