@@ -5,7 +5,7 @@ jobs:
   include:
     - name: "checks"
       script:
-        - mkdir _build && cmake . -B _build && cd _build && make
+        - cmake . && make && ./client test
 
 notifications:
   email: false
