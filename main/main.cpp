@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
     std::string host = "127.0.0.1";
     bool encryption = true;
 
-    if (argc == 2 && argv[1] == "test")
+    if (argc == 2 && std::string(argv[1]) == "test")
     {
         exit(EXIT_SUCCESS);
     }
