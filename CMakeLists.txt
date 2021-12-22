@@ -28,7 +28,7 @@ add_library(${PROJECT_NAME} STATIC
         third-party/PicoSHA2/picosha2.h
 )
 
-hunter_add_package(SFML)
+#hunter_add_package(SFML)
 #hunter_add_package(GTest)
 hunter_add_package(Boost COMPONENTS)
 hunter_add_package(Boost COMPONENTS system)

@@ -2,6 +2,10 @@ os: freebsd
 language: minimal
 compiler: gcc
 
+before_install:
+  - sudo apt-get install libsfml-dev
+  - sudo apt-get install build-essential
+
 addons:
   apt:
     packages:
