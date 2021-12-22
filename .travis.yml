@@ -4,7 +4,7 @@ compiler: gcc
 
 before_install:
   - su -m root -c 'pkg install -y sfml'
-  - su -m root -c 'pkg install -y gtest'
+  #- su -m root -c 'pkg install -y gtest'
 
 addons:
   apt:

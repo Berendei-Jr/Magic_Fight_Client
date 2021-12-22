@@ -38,7 +38,7 @@ find_package(Boost CONFIG REQUIRED system)
 find_package(SFML COMPONENTS graphics CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Threads)
-find_package(GTest CONFIG REQUIRED)
+#find_package(GTest CONFIG REQUIRED)
 
 include_directories( ${CURSES_INCLUDE_DIRS} )
 
@@ -54,11 +54,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(client PUBLIC ${PROJECT_NAME} Threads::Threads ${OPENGL_LIBRARIES} sfml-graphics Boost::boost Boost::system)
 
-if(BUILD_TESTS)
-    add_executable(tests
-            ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp
-            )
-    target_link_libraries(tests ${PROJECT_NAME} GTest::gtest_main GTest::gmock_main)
-    enable_testing()
-    add_test(NAME unit_tests COMMAND tests)
-endif()
+#if(BUILD_TESTS)
+#    add_executable(tests
+#            ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp
+#            )
+#    target_link_libraries(tests ${PROJECT_NAME} GTest::gtest_main GTest::gmock_main)
+#    enable_testing()
+#    add_test(NAME unit_tests COMMAND tests)
+#endif()
