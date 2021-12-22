@@ -1,17 +1,9 @@
-os: linux
+os: freebsd
 language: minimal
 compiler: gcc
 
-install:
-  - CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1.tar.gz"
-  - mkdir cmake && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
-  - export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-  - cd ${TRAVIS_BUILD_DIR}
-
 addons:
   apt:
-    sources:
-      - ubuntu-toolchain-r-test
     packages:
       - g++
       - cmake
