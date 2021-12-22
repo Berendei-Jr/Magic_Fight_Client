@@ -1,7 +1,6 @@
 ﻿#include "xtea3.h"
 
 #include <iostream>
-#include <cstdio>
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>

@@ -15,8 +15,15 @@ int main(int argc, char* argv[])
 
     net::client_interface Client(encryption);
     Client.Connect(host, 6969);
+    if (Client.Register("Supsun", "pass"))
+    {
+        std::cout << "Successfully registered!\n";
+    }
+    if (Client.Login("Supsun", "pass"))
+    {
 
-    //Client.Send("Hello test!\n");
+        std::cout << "Successfully logged!\n";
+    }
 
     char d, act_key;
     bool b = false;

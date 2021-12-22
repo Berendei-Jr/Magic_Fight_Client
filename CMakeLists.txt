@@ -23,8 +23,9 @@ add_library(${PROJECT_NAME} STATIC
         include/NetConnection.hpp
         include/NetClient.hpp
         sources/source.cpp
-        xtea3_lib/xtea3.h
-        xtea3_lib/xtea3.cpp
+        third-party/xtea3_lib/xtea3.h
+        third-party/xtea3_lib/xtea3.cpp
+        third-party/PicoSHA2/picosha2.h
 )
 
 hunter_add_package(SFML)

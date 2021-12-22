@@ -24,7 +24,9 @@ namespace net
     enum class MsgTypes : uint32_t
     {
         Handshake,
-        Logic
+        Logic,
+        Register,
+        Login
     };
 
     struct mes_header

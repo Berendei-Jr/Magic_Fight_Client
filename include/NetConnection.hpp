@@ -3,7 +3,7 @@
 
 #include "../../Magic_Fight_Client/include/NetCommon.hpp"
 #include <NetThreadSafeQueue.hpp>
-#include <xtea3_lib/xtea3.h>
+#include <third-party/xtea3_lib/xtea3.h>
 
 namespace net
 {
@@ -112,6 +112,7 @@ namespace net
                                         {
                                             if (_encryption)
                                             {
+                                                //std::cout << "SIZE: " << _tmp_msg.body.size();
                                                 uint8_t* decr_data = _ptr_xtea->data_decrypt(_tmp_msg.body.data(), key, _tmp_msg.size());
                                                 if (decr_data == nullptr)
                                                 {
