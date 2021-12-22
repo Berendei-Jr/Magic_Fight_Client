@@ -1,0 +1,11 @@
+os: linux
+language: minimal
+
+jobs:
+  include:
+    - name: "checks"
+      script:
+        - cmake . -B _build && cd _build && make
+
+notifications:
+  email: false
