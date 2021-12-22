@@ -3,6 +3,7 @@
 
 #include "../../Magic_Fight_Client/include/NetCommon.hpp"
 #include <NetThreadSafeQueue.hpp>
+#include <third-party/xtea3_lib/xtea3.h>
 
 namespace net
 {
@@ -16,13 +17,15 @@ namespace net
         };
 
         connection(owner parent, boost::asio::io_context& context,
-                   boost::asio::ip::tcp::socket socket, tsqueue<owned_message>& in_queue) :
-                   _context(context), _socket(std::move(socket)), _in_queue(in_queue)
+                   boost::asio::ip::tcp::socket socket,
+                   tsqueue<owned_message>& in_queue, bool encr, std::shared_ptr<xtea3> ptr_xtea) :
+                   _context(context), _socket(std::move(socket)),
+                   _in_queue(in_queue), _encryption(encr), _ptr_xtea(ptr_xtea)
         {
             _owner = parent;
         }
 
-        ~connection(){}
+        ~connection() = default;
 
         void ConnectToClient(uint32_t uid = 0)
         {
@@ -107,6 +110,21 @@ namespace net
                                     {
                                         if (!ec)
                                         {
+                                            if (_encryption)
+                                            {
+                                                //std::cout << "SIZE: " << _tmp_msg.body.size();
+                                                uint8_t* decr_data = _ptr_xtea->data_decrypt(_tmp_msg.body.data(), key, _tmp_msg.size());
+                                                if (decr_data == nullptr)
+                                                {
+                                                    std::cerr << "Error decrypt\n";
+                                                    ReadHeader();
+                                                }
+                                                _tmp_msg.body.clear();
+                                                for (size_t i = 0; i < _ptr_xtea->get_decrypt_size() - 1; i++)
+                                                {
+                                                    _tmp_msg.body.push_back(decr_data[i]);
+                                                }
+                                            }
                                             AddToIncomingMsgQueue();
                                         } else {
                                             std::cout << "[" << _id << "] Read body failed: " << ec.message() << "\n";
@@ -122,7 +140,7 @@ namespace net
                                      {
                                          if (!ec)
                                          {
-                                             if (_out_queue.front().body.size() > 0)
+                                             if (!_out_queue.front().body.empty())
                                              {
                                                  WriteBody();
                                              } else {
@@ -180,6 +198,9 @@ namespace net
         owner _owner = owner::server;
         uint32_t _id = 0;
         message _tmp_msg;
+        bool _encryption;
+        std::shared_ptr<xtea3> _ptr_xtea;
+        uint32_t key[8] = {0x12, 0x55, 0xAB, 0xF8, 0x12, 0x45, 0x77, 0x1A};
     };
 }
 

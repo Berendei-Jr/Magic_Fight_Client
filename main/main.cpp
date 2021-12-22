@@ -1,9 +1,34 @@
 #include <NetClient.hpp>
 #include <SFML/Graphics.hpp>
 
-int main() {
-    net::client_interface Client;
-    Client.Connect("127.0.0.1", 6969);
+int main(int argc, char* argv[])
+{
+
+    std::string host = "127.0.0.1";
+    bool encryption = true;
+
+    if (argc == 2 && std::string(argv[1]) == "test")
+    {
+        exit(EXIT_SUCCESS);
+    }
+
+    if (argc == 3)
+    {
+        host = argv[1];
+        encryption = std::stoi(argv[2]);
+    }
+
+    net::client_interface Client(encryption);
+    Client.Connect(host, 6969);
+    if (Client.Register("Supsun", "pass"))
+    {
+        std::cout << "Successfully registered!\n";
+    }
+    if (Client.Login("Supsun", "pass"))
+    {
+
+        std::cout << "Successfully logged!\n";
+    }
 
     char d, act_key;
     bool b = false;
@@ -38,8 +63,8 @@ int main() {
                     {
                         Client.Send(std::to_string(it2->second)
                         + " " + std::to_string(it1->second));
-                        std::cout << it2->second <<
-                                  " " << it1->second << "\n";
+                        //std::cout << it2->second <<
+                        //          " " << it1->second << "\n";
                     }
                     b = false;
                 } else {
@@ -51,7 +76,10 @@ int main() {
             }
 
             window.clear(sf::Color::Black);
-
+            if (Client.Ready())
+            {
+                std::cout << Client.Get() << "\n";
+            }
 
             window.display();
         }

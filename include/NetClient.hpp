@@ -11,22 +11,121 @@ namespace net
 
         tsqueue<std::string> _in_logic_messages;
 
-        client_interface(): _socket(_context) {}
+        explicit client_interface(bool encr): _socket(_context), _encryption(encr), _ptr_xtea(std::make_shared<xtea3>()) {}
         bool Ready()
         {
             return !_in_logic_messages.empty();
         }
+
         std::string Get()
         {
             return _in_logic_messages.pop_front();
         }
+
+        bool Register(const std::string& name, const std::string& pass)
+        {
+            if (IsConnected())
+            {
+                message m;
+                m.header.id = MsgTypes::Register;
+                std::string tmp = name + " " + pass;
+
+                if (_encryption)
+                {
+                    uint8_t* tmp_ptr = _ptr_xtea->data_crypt((uint8_t *) tmp.c_str(), key, tmp.length() + 1);
+                    if (tmp_ptr == nullptr) {
+                        std::cerr << "Error encrypt message\n";
+                    }
+                    m.header.size = _ptr_xtea->get_crypt_size();
+                    m.body;
+                    for (size_t i = 0; i < m.header.size; i++)
+                    {
+                        m.body.push_back(tmp_ptr[i]);
+                    }
+                } else {
+                    m.header.size = tmp.size();
+                    m.body;
+                    for (auto& it : tmp)
+                    {
+                        m.body.push_back(it);
+                    }
+                }
+                _connection->Send(m);
+
+                std::unique_lock<std::mutex> ul(_mtxr);
+                _cvr.wait(ul);
+                return _registered;
+            } else {
+                throw std::runtime_error("No connection to the server!\n");
+            }
+        }
+
+        bool Login(const std::string& name, const std::string& pass)
+        {
+            if (IsConnected())
+            {
+                message m;
+                m.header.id = MsgTypes::Login;
+                std::string tmp = name + " " + pass;
+
+                if (_encryption)
+                {
+                    uint8_t* tmp_ptr = _ptr_xtea->data_crypt((uint8_t *) tmp.c_str(), key, tmp.length() + 1);
+                    if (tmp_ptr == nullptr) {
+                        std::cerr << "Error encrypt message\n";
+                    }
+                    m.header.size = _ptr_xtea->get_crypt_size();
+                    m.body;
+                    for (size_t i = 0; i < m.header.size; i++)
+                    {
+                        m.body.push_back(tmp_ptr[i]);
+                    }
+                } else {
+                    m.header.size = tmp.size();
+                    m.body;
+                    for (auto& it : tmp)
+                    {
+                        m.body.push_back(it);
+                    }
+                }
+                std::unique_lock<std::mutex> ul(_mtxl);
+                _connection->Send(m);
+                _cvl.wait(ul);
+
+                return _logged;
+            } else {
+                throw std::runtime_error("No connection to the server!\n");
+            }
+        }
+
+
         void Send(const std::string& msg)
         {
-            if (IsConnected()) {
+            if (IsConnected())
+            {
                 message m;
                 m.header.id = MsgTypes::Logic;
-                m.header.size = msg.size();
-                m.body = msg;
+
+                if (_encryption)
+                {
+                    uint8_t* tmp_ptr = _ptr_xtea->data_crypt((uint8_t *) msg.c_str(), key, msg.length() + 1);
+                    if (tmp_ptr == nullptr) {
+                        std::cerr << "Error encrypt message\n";
+                    }
+                    m.header.size = _ptr_xtea->get_crypt_size();
+                    m.body;
+                   for (size_t i = 0; i < m.header.size; i++)
+                    {
+                        m.body.push_back(tmp_ptr[i]);
+                    }
+                } else {
+                    m.header.size = msg.size();
+                    m.body;
+                    for (auto& it : msg)
+                    {
+                        m.body.push_back(it);
+                    }
+                }
                 _connection->Send(m);
             }
         }
@@ -40,7 +139,8 @@ namespace net
 
                 _connection = std::make_unique<connection>(
                         connection::owner::client, _context,
-                        boost::asio::ip::tcp::socket(_context), _in_queue);
+                        boost::asio::ip::tcp::socket(_context), _in_queue,
+                        _encryption, _ptr_xtea);
 
                 _connection->ConnectToServer(endpoints);
                 _thrContext = std::thread([this]() { _context.run(); });
@@ -101,14 +201,53 @@ namespace net
 
         void OnMessage(message& msg)
         {
+            std::string tmp;
             switch (msg.header.id)
             {
                 case MsgTypes::Handshake:
                     std::cout << "Handshake received!\n";
                 case MsgTypes::Logic:
-                    //std::cout << "LoGIC msg received!\n";
-                    std::string tmp = msg.body;
-                    _in_logic_messages.push_back(tmp);
+                    if (!_encryption)
+                    {
+                        for (auto& it : msg.body)
+                        {
+                            tmp.push_back(it);
+                        }
+                        _in_logic_messages.push_back(tmp);
+                    } else {
+                        tmp = std::string((char*)msg.body.data());
+                        _in_logic_messages.push_back(tmp);
+                    }
+                case MsgTypes::Register:
+                    if (msg.body.front() == '1')
+                    {
+                        _registered = true;
+                        _cvr.notify_one();
+                        break;
+                    } else if (msg.body.front() != '0')
+                    {
+                        std::cerr << "Bad reply (register)\n";
+                        _cvr.notify_one();
+                        break;
+                    } else {
+                        _cvr.notify_one();
+                        break;
+                    }
+                case MsgTypes::Login:
+                    if (msg.body.front() == '1')
+                    {
+                        _logged = true;
+                        _cvl.notify_one();
+                        break;
+                    } else if (msg.body.front() != '0')
+                    {
+                        std::cerr << "Bad reply (login)\n";
+                        _cvl.notify_one();
+                        break;
+                    } else {
+                        _cvl.notify_one();
+                        break;
+                    }
             }
         }
 
@@ -126,12 +265,22 @@ namespace net
             }
         }
 
+        bool _encryption;
+        std::shared_ptr<xtea3> _ptr_xtea;
+        uint32_t key[8] = {0x12, 0x55, 0xAB, 0xF8, 0x12, 0x45, 0x77, 0x1A};
         boost::asio::ip::tcp::endpoint _endpoint;
         tsqueue<owned_message> _in_queue;
         boost::asio::io_context _context;
         std::thread _thrContext;
         boost::asio::ip::tcp::socket _socket; // The one connected to the server
         std::unique_ptr<connection> _connection;
+
+        bool _registered = false;
+        bool _logged = false;
+        std::mutex _mtxr;
+        std::mutex _mtxl;
+        std::condition_variable _cvr;
+        std::condition_variable _cvl;
     };
 }
 

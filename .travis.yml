@@ -1,0 +1,24 @@
+os: freebsd
+language: minimal
+compiler: gcc
+
+before_install:
+  - su -m root -c 'pkg install -y sfml'
+  #- su -m root -c 'pkg install -y gtest'
+
+addons:
+  apt:
+    packages:
+      - g++
+      - cmake
+
+jobs:
+  include:
+    - name: "checks"
+      script:
+        - mkdir _build
+        - cd _build
+        - cmake .. && make && ./client test
+
+notifications:
+  email: false
