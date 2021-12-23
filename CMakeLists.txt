@@ -38,7 +38,7 @@ find_package(Boost CONFIG REQUIRED system)
 find_package(SFML COMPONENTS graphics CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Threads)
-#find_package(GTest CONFIG REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 
 include_directories( ${CURSES_INCLUDE_DIRS} )
 

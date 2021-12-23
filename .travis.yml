@@ -1,16 +1,11 @@
-os: freebsd
+os: linux
 language: minimal
 compiler: gcc
 
 before_install:
-  - su -m root -c 'pkg install -y sfml'
-  #- su -m root -c 'pkg install -y gtest'
-
-addons:
-  apt:
-    packages:
-      - g++
-      - cmake
+  - sudo apt-get install libsfml-dev
+  - sudo apt-get install libgtest-dev
+  - sudo apt-get install cmake
 
 jobs:
   include:
