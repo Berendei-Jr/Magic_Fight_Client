@@ -3,8 +3,6 @@ language: minimal
 compiler: gcc
 
 before_install:
-  - sudo apt-get install libsfml-dev
-  - sudo apt-get install libgtest-dev
   - wget https://github.com/Kitware/CMake/releases/download/v3.15.2/cmake-3.15.2.tar.gz
   - tar -zxvf cmake-3.15.2.tar.gz
   - cd cmake-3.15.2
@@ -13,6 +11,14 @@ before_install:
   - sudo make install
   - sudo apt install cmake
   - cd ${TRAVIS_BUILD_DIR}
+  - sudo apt-get install libsfml-dev
+  - sudo apt-get install libgtest-dev
+
+addons:
+  apt:
+    packages:
+      - g++
+      - cmake
 
 jobs:
   include:

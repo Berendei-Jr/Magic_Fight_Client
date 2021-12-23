@@ -1,6 +1,17 @@
 #include <NetClient.hpp>
 #include <SFML/Graphics.hpp>
 
+void Clear()
+{
+    std::cout << "\033[H\033[2J\033[3J";
+}
+
+void Pause()
+{
+    std::cout << "\nPress Enter to continue...\n";
+    std::cin.ignore();
+}
+
 int main(int argc, char* argv[])
 {
 
@@ -20,16 +31,57 @@ int main(int argc, char* argv[])
 
     net::client_interface Client(encryption);
     Client.Connect(host, 6969);
-    if (Client.Register("Supsun", "pass"))
-    {
-        std::cout << "Successfully registered!\n";
-    }
-    if (Client.Login("Supsun", "pass"))
-    {
 
-        std::cout << "Successfully logged!\n";
+    while (true)
+    {
+        Clear();
+        std::cout << "\t~~~~~ Welcome to the Magic Fight! ~~~~~\n Choose your option:\n"
+                  << "1) Sign up\n2) Sign in\n3) Exit\n";
+        char Ch;
+        std::cin >> Ch;
+        if (Ch == '3')
+            exit(EXIT_SUCCESS);
+        else if (Ch == '1')
+        {
+            Clear();
+            std::cout << "\tEnter nickname: ";
+            std::string name, pass;
+            std::cin.ignore();
+            getline(std::cin, name);
+            std::cout << "\tEnter password: ";
+            getline(std::cin, pass);
+            if (Client.Register(name, pass)) {
+                Clear();
+                std::cout << "You successfully signed up!\n";
+                Pause();
+                continue;
+            } else {
+                std::cerr << "Invalid info!\n";
+                Pause();
+                continue;
+            }
+        } else if (Ch == '2')
+        {
+            Clear();
+            std::cout << "\tEnter nickname: ";
+            std::string name, pass;
+            std::cin.ignore();
+            getline(std::cin, name);
+            std::cout << "\tEnter password: ";
+            getline(std::cin, pass);
+            if (Client.Login(name, pass)) {
+                Clear();
+                std::cout << "You successfully signed in!\n";
+                Pause();
+                break;
+            } else {
+                std::cerr << "Invalid info!\n";
+                Pause();
+                continue;
+            }
+        }
     }
-
+    //std::cin.get();
     char d, act_key;
     bool b = false;
 
@@ -47,7 +99,6 @@ int main(int argc, char* argv[])
     std::map<char, int>::iterator it1, it2;
     sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
 
-    //! БЫДЛОКОД
     while (window.isOpen()) {
 
         sf::Event event;
