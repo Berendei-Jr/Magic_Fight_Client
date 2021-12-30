@@ -1,3 +1,4 @@
+[![Build Status](https://app.travis-ci.com/Berendei-Jr/Magic_Fight_Client.svg?token=yrbcZndhR45esCVoxGyJ&branch=main)](https://app.travis-ci.com/Berendei-Jr/Magic_Fight_Client)
 # Magic_Fight_Client
 Для запуска сети необходимо использовать команды:
 ```
