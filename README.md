@@ -1,5 +1,5 @@
-[![Build Status](https://app.travis-ci.com/Berendei-Jr/Magic_Fight_Client.svg?token=yrbcZndhR45esCVoxGyJ&branch=main)](https://app.travis-ci.com/Berendei-Jr/Magic_Fight_Client)
-# Magic_Fight_Client
+# Клиентское приложение для игры Magic Fight
+## Сетевой функционал приложения написан с помощью boost::asio
 Для запуска сети необходимо использовать команды:
 ```
 net::client_interface Client;
